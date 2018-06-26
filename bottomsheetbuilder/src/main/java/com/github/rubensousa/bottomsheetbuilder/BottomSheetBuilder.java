@@ -16,7 +16,9 @@
 
 package com.github.rubensousa.bottomsheetbuilder;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -24,6 +26,7 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.MenuRes;
+import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.annotation.StyleRes;
 import android.support.design.widget.AppBarLayout;
@@ -75,6 +78,9 @@ public class BottomSheetBuilder {
     private AppBarLayout mAppBarLayout;
     private Context mContext;
     private BottomSheetItemClickListener mItemClickListener;
+    private DialogInterface.OnDismissListener mOnDismissListener;
+    private DialogInterface.OnCancelListener mOnCancelListener;
+    private DialogInterface.OnShowListener mOnShowListener;
 
     public BottomSheetBuilder(Context context, CoordinatorLayout coordinatorLayout) {
         mContext = context;
@@ -107,6 +113,7 @@ public class BottomSheetBuilder {
         return this;
     }
 
+    @SuppressLint("RestrictedApi")
     public BottomSheetBuilder setMenu(@MenuRes int menu) {
         mMenu = new MenuBuilder(mContext);
         new SupportMenuInflater(mContext).inflate(menu, mMenu);
@@ -244,6 +251,21 @@ public class BottomSheetBuilder {
         return this;
     }
 
+    public BottomSheetBuilder setOnDismissListener(DialogInterface.OnDismissListener mOnDismissListener) {
+        this.mOnDismissListener = mOnDismissListener;
+        return this;
+    }
+
+    public BottomSheetBuilder setOnCancelListener(DialogInterface.OnCancelListener mOnCancelListener) {
+        this.mOnCancelListener = mOnCancelListener;
+        return this;
+    }
+
+    public BottomSheetBuilder setOnShowListener(DialogInterface.OnShowListener mOnShowListener) {
+        this.mOnShowListener = mOnShowListener;
+        return this;
+    }
+
     public View createView() {
 
         if (mMenu == null && mAdapterBuilder.getItems().isEmpty()) {
@@ -272,7 +294,24 @@ public class BottomSheetBuilder {
                 CoordinatorLayout.LayoutParams.WRAP_CONTENT);
 
         layoutParams.gravity = Gravity.CENTER_HORIZONTAL;
-        layoutParams.setBehavior(new BottomSheetBehavior());
+
+        BottomSheetBehavior behavior = new BottomSheetBehavior();
+
+        behavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+                    if (mOnShowListener != null) mOnShowListener.onShow(null);
+                } else if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                    if (mOnDismissListener != null) mOnDismissListener.onDismiss(null);
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {}
+        });
+
+        layoutParams.setBehavior(behavior);
 
         if (mContext.getResources().getBoolean(R.bool.tablet_landscape)) {
             layoutParams.width = mContext.getResources()
@@ -316,6 +355,9 @@ public class BottomSheetBuilder {
         dialog.expandOnStart(mExpandOnStart);
         dialog.delayDismiss(mDelayedDismiss);
         dialog.setBottomSheetItemClickListener(mItemClickListener);
+        dialog.setOnDismissListener(mOnDismissListener);
+        dialog.setOnCancelListener(mOnCancelListener);
+        dialog.setOnShowListener(mOnShowListener);
 
         if (mContext.getResources().getBoolean(R.bool.tablet_landscape)) {
             FrameLayout.LayoutParams layoutParams

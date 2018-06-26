@@ -73,6 +73,7 @@ public class BottomSheetAdapterBuilder {
         mItems.add(new BottomSheetDivider(dividerBackground));
     }
 
+    @SuppressLint("RestrictedApi")
     public void addItem(int id, String title, Drawable icon, int itemTextColor,
                         int itemBackground, int tintColor) {
         if (mMenu == null) {

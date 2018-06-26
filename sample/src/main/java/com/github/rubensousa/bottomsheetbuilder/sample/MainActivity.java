@@ -61,6 +61,18 @@ public class MainActivity extends AppCompatActivity implements BottomSheetItemCl
                 .setBackgroundColorResource(android.R.color.white)
                 .setMenu(R.menu.menu_bottom_grid_sheet)
                 .setItemClickListener(this)
+                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialogInterface) {
+                        Log.e("MainActivity", "Dismissed!!!");
+                    }
+                })
+                .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialogInterface) {
+                        Log.e("MainActivity", "Canceled!!!");
+                    }
+                })
                 .createView();
 
         mBehavior = BottomSheetBehavior.from(bottomSheet);
@@ -149,13 +161,15 @@ public class MainActivity extends AppCompatActivity implements BottomSheetItemCl
                         mShowingSimpleDialog = false;
                     }
                 })
+                .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialogInterface) {
+                        Log.e("TEST", "onCancel!!!");
+                        mShowingSimpleDialog = false;
+                    }
+                })
                 .createDialog();
-        mBottomSheetDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                mShowingSimpleDialog = false;
-            }
-        });
+
         mBottomSheetDialog.show();
     }
 
